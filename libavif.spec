@@ -37,7 +37,7 @@ Libavif is shared library from libavif
  
 %package devel
 Summary:        Development files for libavif
-Requires:       %{name}%{?_isa} = %{version}-%{release}
+Requires:       %{libname} = %{version}
  
 %description devel
 This package holds the development files for libavif.
