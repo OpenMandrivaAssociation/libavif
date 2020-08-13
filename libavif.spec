@@ -1,6 +1,6 @@
 Name:       libavif
 Version:    0.8.1
-Release:    1%{?dist}
+Release:    1
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
@@ -8,11 +8,8 @@ URL:        https://github.com/AOMediaCodec/libavif
 Source0:    %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
  
 BuildRequires:  cmake
-BuildRequires:  gcc-c++
 BuildRequires:  nasm
-%if %{with aom}
 BuildRequires:  pkgconfig(aom)
-%endif
 BuildRequires:  pkgconfig(dav1d)
 BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libpng)
@@ -46,7 +43,7 @@ This package holds the commandline tools to encode and decode AVIF files.
 %package     -n avif-pixbuf-loader
 Summary:        AVIF image loader for GTK+ applications
 BuildRequires:  pkgconfig(gdk-pixbuf-2.0)
-Requires:       gdk-pixbuf2
+Requires:       gdk-pixbuf2.0
  
 %description -n avif-pixbuf-loader
 Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
@@ -55,14 +52,16 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %autosetup -p1
  
 %build
-%cmake  %{?with_aom:-DAVIF_CODEC_AOM=1} \
+%cmake  -DAVIF_CODEC_AOM=1 \
         -DAVIF_CODEC_DAV1D=1 \
         -DAVIF_CODEC_RAV1E=1 \
         -DAVIF_BUILD_APPS=1 \
         -DAVIF_BUILD_GDK_PIXBUF=1
-%cmake_build
+%make_build
+
 %install
-%cmake_install
+%make_install -C build
+
 %files
 %license LICENSE
 %{_libdir}/libavif.so.6*
