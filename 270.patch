@@ -1,0 +1,23 @@
+From e77e02ebcd4521b3533e395023922ba0abde4c78 Mon Sep 17 00:00:00 2001
+From: Daniel Novomesky <dnovomesky@gmail.com>
+Date: Wed, 12 Aug 2020 12:30:20 +0200
+Subject: [PATCH] Disable Clang warning (drop const qualifier)
+
+---
+ contrib/gdk-pixbuf/CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/contrib/gdk-pixbuf/CMakeLists.txt b/contrib/gdk-pixbuf/CMakeLists.txt
+index 22eb7c7..919f0bc 100644
+--- a/contrib/gdk-pixbuf/CMakeLists.txt
++++ b/contrib/gdk-pixbuf/CMakeLists.txt
+@@ -14,6 +14,9 @@ if(AVIF_BUILD_GDK_PIXBUF)
+ 
+             # This is required because glib stupidly uses invalid #define names, such as __G_LIB_H__…
+             add_definitions(-Wno-reserved-id-macro)
++            if(CMAKE_C_COMPILER_ID MATCHES "Clang")
++                add_definitions(-Wno-cast-qual)
++            endif()
+             target_link_libraries(pixbufloader-avif PUBLIC ${GDK_PIXBUF_LIBRARIES} avif)
+             target_include_directories(pixbufloader-avif PUBLIC ${GDK_PIXBUF_INCLUDE_DIRS})
+ 
