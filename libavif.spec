@@ -1,3 +1,8 @@
+%define major 6
+
+%define libname		%mklibname avif %{major}
+%define develname	%mklibname avif -d
+
 Name:       libavif
 Version:    0.8.1
 Release:    1
@@ -22,6 +27,13 @@ This library aims to be a friendly, portable C implementation of the AV1 Image
 File Format, as described here:
  
 https://aomediacodec.github.io/av1-avif/
+
+%package -n %{libname}
+Summary:        Libavif is shared library from libavif
+Group:          System/Libraries
+
+%description -n %{libname}
+Libavif is shared library from libavif
  
 %package devel
 Summary:        Development files for libavif
@@ -63,10 +75,10 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %install
 %make_install -C build
 
-%files
-%license LICENSE
-%{_libdir}/libavif.so.6*
- 
+
+%files -n %{libname}
+%{_libdir}/libavif.so.%{major}*
+
 %files devel
 %{_libdir}/libavif.so
 %{_includedir}/avif/
