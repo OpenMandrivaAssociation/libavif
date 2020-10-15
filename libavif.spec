@@ -1,17 +1,16 @@
-%define major 6
+%define major 7
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
 
 Name:       libavif
-Version:    0.8.1
+Version:    0.8.2
 Release:    1
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
 URL:        https://github.com/AOMediaCodec/libavif
 Source0:    https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-%{version}.tar.gz
-Patch0:     https://patch-diff.githubusercontent.com/raw/AOMediaCodec/libavif/pull/270.patch
  
 BuildRequires:  cmake
 BuildRequires:  nasm
