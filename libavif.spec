@@ -20,6 +20,7 @@ BuildRequires:  pkgconfig(libjpeg)
 BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(rav1e)
 BuildRequires:  pkgconfig(zlib)
+BuildRequires:  pkgconfig(libyuv)
  
 %description
 This library aims to be a friendly, portable C implementation of the AV1 Image
