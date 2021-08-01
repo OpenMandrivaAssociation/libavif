@@ -1,10 +1,10 @@
-%define major 10
+%define major 12
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
 
 Name:       libavif
-Version:    0.9.0
+Version:    0.9.2
 Release:    1
 Summary:    Library for encoding and decoding .avif files
  
