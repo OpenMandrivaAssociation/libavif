@@ -13,6 +13,10 @@ Summary:    Library for encoding and decoding .avif files
 License:    BSD
 URL:        https://github.com/AOMediaCodec/libavif
 Source0:    https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-%{version}.tar.gz
+
+# Fix compilation with new Clang 13.0.0 and new Glib2.0/
+# Patch still awaiting for merge!
+Patch0:     https://patch-diff.githubusercontent.com/raw/AOMediaCodec/libavif/pull/783.patch
  
 BuildRequires:  cmake
 BuildRequires:  nasm
