@@ -1,6 +1,4 @@
-#global optflags %{optflags} -fuse-ld=bfd
-
-%define major 12
+%define major 13
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
