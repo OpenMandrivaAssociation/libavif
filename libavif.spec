@@ -1,4 +1,4 @@
-%global optflags %{optflags} -fuse-ld=bfd
+#global optflags %{optflags} -fuse-ld=bfd
 
 %define major 12
 
