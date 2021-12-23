@@ -1,0 +1,269 @@
+diff --git a/.github/workflows/cifuzz.yml b/.github/workflows/cifuzz.yml
+new file mode 100644
+index 0000000..e5aa143
+--- /dev/null
++++ b/.github/workflows/cifuzz.yml
+@@ -0,0 +1,24 @@
++name: CIFuzz
++on: [pull_request]
++jobs:
++  Fuzzing:
++    runs-on: ubuntu-latest
++    steps:
++    - name: Build Fuzzers
++      id: build
++      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
++      with:
++        oss-fuzz-project-name: 'libavif'
++        dry-run: false
++    - name: Run Fuzzers
++      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
++      with:
++        oss-fuzz-project-name: 'libavif'
++        fuzz-seconds: 600
++        dry-run: false
++    - name: Upload Crash
++      uses: actions/upload-artifact@v1
++      if: failure() && steps.build.outcome == 'success'
++      with:
++        name: artifacts
++        path: ./out/artifacts
+diff --git a/.github/workflows/docker-ci.yml b/.github/workflows/docker-ci.yml
+new file mode 100644
+index 0000000..a7d7bea
+--- /dev/null
++++ b/.github/workflows/docker-ci.yml
+@@ -0,0 +1,20 @@
++name: Docker Build
++on:
++  push:
++    branches:
++    tags:
++    paths:
++      - "!**.md"
++  pull_request:
++    paths:
++      - "!**.md"
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++
++    steps:
++      - uses: actions/checkout@v2
++
++      - name: build docker image
++        run: docker build  ./tests/docker
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7182df7..684131d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -328,12 +328,12 @@ if(AVIF_CODEC_RAV1E)
+             find_package(rav1e REQUIRED)
+             set(AVIF_CODEC_INCLUDES ${AVIF_CODEC_INCLUDES} ${RAV1E_INCLUDE_DIR})
+         endif()
+-        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${RAV1E_LIBRARY})
++        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${RAV1E_LIBRARIES})
+     endif()
+ 
+     # Unfortunately, rav1e requires a few more libraries
+     if(WIN32)
+-        set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ws2_32.lib userenv.lib)
++        set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ws2_32.lib bcrypt.lib userenv.lib)
+     elseif(UNIX AND NOT APPLE)
+         set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ${CMAKE_DL_LIBS}) # for backtrace
+     endif()
+diff --git a/apps/shared/y4m.c b/apps/shared/y4m.c
+index 8c80772..a69bc64 100644
+--- a/apps/shared/y4m.c
++++ b/apps/shared/y4m.c
+@@ -363,27 +363,38 @@ avifBool y4mRead(const char * inputFilename, avifImage * avif, avifAppSourceTimi
+     avifPixelFormatInfo info;
+     avifGetPixelFormatInfo(avif->yuvFormat, &info);
+ 
+-    uint32_t planeBytes[4];
+-    planeBytes[0] = avif->yuvRowBytes[0] * avif->height;
+-    planeBytes[1] = avif->yuvRowBytes[1] * ((avif->height + info.chromaShiftY) >> info.chromaShiftY);
+-    planeBytes[2] = avif->yuvRowBytes[2] * ((avif->height + info.chromaShiftY) >> info.chromaShiftY);
+-    if (frame.hasAlpha) {
+-        planeBytes[3] = avif->alphaRowBytes * avif->height;
+-    } else {
+-        planeBytes[3] = 0;
+-    }
+-
+-    for (int i = 0; i < 3; ++i) {
+-        uint32_t bytesRead = (uint32_t)fread(avif->yuvPlanes[i], 1, planeBytes[i], frame.inputFile);
+-        if (bytesRead != planeBytes[i]) {
+-            fprintf(stderr, "Failed to read y4m plane (not enough data, wanted %d, got %d): %s\n", planeBytes[i], bytesRead, frame.displayFilename);
+-            goto cleanup;
++    for (int plane = 0; plane < 3; ++plane) {
++        uint32_t planeWidth = (plane > 0) ? ((avif->width + info.chromaShiftX) >> info.chromaShiftX) : avif->width;
++        uint32_t planeHeight = (plane > 0) ? ((avif->height + info.chromaShiftY) >> info.chromaShiftY) : avif->height;
++        uint32_t rowBytes = planeWidth << (avif->depth > 8);
++        uint8_t * row = avif->yuvPlanes[plane];
++        for (uint32_t y = 0; y < planeHeight; ++y) {
++            uint32_t bytesRead = (uint32_t)fread(row, 1, rowBytes, frame.inputFile);
++            if (bytesRead != rowBytes) {
++                fprintf(stderr,
++                        "Failed to read y4m row (not enough data, wanted %" PRIu32 ", got %" PRIu32 "): %s\n",
++                        rowBytes,
++                        bytesRead,
++                        frame.displayFilename);
++                goto cleanup;
++            }
++            row += avif->yuvRowBytes[plane];
+         }
+     }
+     if (frame.hasAlpha) {
+-        if (fread(avif->alphaPlane, 1, planeBytes[3], frame.inputFile) != planeBytes[3]) {
+-            fprintf(stderr, "Failed to read y4m plane (not enough data): %s\n", frame.displayFilename);
+-            goto cleanup;
++        uint32_t rowBytes = avif->width << (avif->depth > 8);
++        uint8_t * row = avif->alphaPlane;
++        for (uint32_t y = 0; y < avif->height; ++y) {
++            uint32_t bytesRead = (uint32_t)fread(row, 1, rowBytes, frame.inputFile);
++            if (bytesRead != rowBytes) {
++                fprintf(stderr,
++                        "Failed to read y4m row (not enough data, wanted %" PRIu32 ", got %" PRIu32 "): %s\n",
++                        rowBytes,
++                        bytesRead,
++                        frame.displayFilename);
++                goto cleanup;
++            }
++            row += avif->alphaRowBytes;
+         }
+     }
+ 
+@@ -517,28 +528,30 @@ avifBool y4mWrite(const char * outputFilename, const avifImage * avif)
+         goto cleanup;
+     }
+ 
+-    uint8_t * planes[3];
+-    uint32_t planeBytes[3];
+-    planes[0] = avif->yuvPlanes[0];
+-    planes[1] = avif->yuvPlanes[1];
+-    planes[2] = avif->yuvPlanes[2];
+-    planeBytes[0] = avif->yuvRowBytes[0] * avif->height;
+-    planeBytes[1] = avif->yuvRowBytes[1] * (avif->height >> info.chromaShiftY);
+-    planeBytes[2] = avif->yuvRowBytes[2] * (avif->height >> info.chromaShiftY);
+-
+-    for (int i = 0; i < 3; ++i) {
+-        if (fwrite(planes[i], 1, planeBytes[i], f) != planeBytes[i]) {
+-            fprintf(stderr, "Failed to write %" PRIu32 " bytes: %s\n", planeBytes[i], outputFilename);
+-            success = AVIF_FALSE;
+-            goto cleanup;
++    for (int plane = 0; plane < 3; ++plane) {
++        uint32_t planeWidth = (plane > 0) ? ((avif->width + info.chromaShiftX) >> info.chromaShiftX) : avif->width;
++        uint32_t planeHeight = (plane > 0) ? ((avif->height + info.chromaShiftY) >> info.chromaShiftY) : avif->height;
++        uint32_t rowBytes = planeWidth << (avif->depth > 8);
++        const uint8_t * row = avif->yuvPlanes[plane];
++        for (uint32_t y = 0; y < planeHeight; ++y) {
++            if (fwrite(row, 1, rowBytes, f) != rowBytes) {
++                fprintf(stderr, "Failed to write %" PRIu32 " bytes: %s\n", rowBytes, outputFilename);
++                success = AVIF_FALSE;
++                goto cleanup;
++            }
++            row += avif->yuvRowBytes[plane];
+         }
+     }
+     if (writeAlpha) {
+-        uint32_t alphaPlaneBytes = avif->alphaRowBytes * avif->height;
+-        if (fwrite(avif->alphaPlane, 1, alphaPlaneBytes, f) != alphaPlaneBytes) {
+-            fprintf(stderr, "Failed to write %" PRIu32 " bytes: %s\n", alphaPlaneBytes, outputFilename);
+-            success = AVIF_FALSE;
+-            goto cleanup;
++        uint32_t rowBytes = avif->width << (avif->depth > 8);
++        const uint8_t * row = avif->alphaPlane;
++        for (uint32_t y = 0; y < avif->height; ++y) {
++            if (fwrite(row, 1, rowBytes, f) != rowBytes) {
++                fprintf(stderr, "Failed to write %" PRIu32 " bytes: %s\n", rowBytes, outputFilename);
++                success = AVIF_FALSE;
++                goto cleanup;
++            }
++            row += avif->alphaRowBytes;
+         }
+     }
+ 
+diff --git a/cmake/Modules/Findrav1e.cmake b/cmake/Modules/Findrav1e.cmake
+index c86e044..f620e63 100644
+--- a/cmake/Modules/Findrav1e.cmake
++++ b/cmake/Modules/Findrav1e.cmake
+@@ -36,11 +36,10 @@ find_library(RAV1E_LIBRARY
+              PATHS ${_RAV1E_LIBDIR})
+ endif()
+ 
+-if (RAV1E_LIBRARY)
+-    set(RAV1E_LIBRARIES
+-        ${RAV1E_LIBRARIES}
+-        ${RAV1E_LIBRARY})
+-endif (RAV1E_LIBRARY)
++set(RAV1E_LIBRARIES
++    ${RAV1E_LIBRARIES}
++    ${RAV1E_LIBRARY}
++    ${_RAV1E_LDFLAGS})
+ 
+ include(FindPackageHandleStandardArgs)
+ find_package_handle_standard_args(rav1e
+diff --git a/ext/rav1e.cmd b/ext/rav1e.cmd
+index 507d2cb..b546a75 100755
+--- a/ext/rav1e.cmd
++++ b/ext/rav1e.cmd
+@@ -10,7 +10,7 @@
+ : #
+ : # On a successful local build, rav1e/build.libavif/ should contain the necessary headers and static library.
+ 
+-git clone -b 0.4 --depth 1 https://github.com/xiph/rav1e.git
++git clone -b 0.5 --depth 1 https://github.com/xiph/rav1e.git
+ 
+ cd rav1e
+ cargo install cargo-c
+diff --git a/include/avif/avif.h b/include/avif/avif.h
+index 47728b9..7d8978c 100644
+--- a/include/avif/avif.h
++++ b/include/avif/avif.h
+@@ -58,7 +58,7 @@ extern "C" {
+ #define AVIF_VERSION_MAJOR 0
+ #define AVIF_VERSION_MINOR 9
+ #define AVIF_VERSION_PATCH 3
+-#define AVIF_VERSION_DEVEL 0
++#define AVIF_VERSION_DEVEL 1
+ #define AVIF_VERSION \
+     ((AVIF_VERSION_MAJOR * 1000000) + (AVIF_VERSION_MINOR * 10000) + (AVIF_VERSION_PATCH * 100) + AVIF_VERSION_DEVEL)
+ 
+diff --git a/src/read.c b/src/read.c
+index 68784fe..7a95690 100644
+--- a/src/read.c
++++ b/src/read.c
+@@ -917,14 +917,17 @@ static avifResult avifDecoderItemValidateAV1(const avifDecoderItem * item, avifD
+     const avifProperty * av1CProp = avifPropertyArrayFind(&item->properties, "av1C");
+     if (!av1CProp) {
+         // An av1C box is mandatory in all valid AVIF configurations. Bail out.
+-        avifDiagnosticsPrintf(diag, "Item ID %u is missing mandatory av1C property", item->id);
++        avifDiagnosticsPrintf(diag, "Item ID %u of type '%.4s' is missing mandatory av1C property", item->id, (const char *)item->type);
+         return AVIF_RESULT_BMFF_PARSE_FAILED;
+     }
+ 
+     const avifProperty * pixiProp = avifPropertyArrayFind(&item->properties, "pixi");
+     if (!pixiProp && (strictFlags & AVIF_STRICT_PIXI_REQUIRED)) {
+         // A pixi box is mandatory in all valid AVIF configurations. Bail out.
+-        avifDiagnosticsPrintf(diag, "[Strict] Item ID %u is missing mandatory pixi property", item->id);
++        avifDiagnosticsPrintf(diag,
++                              "[Strict] Item ID %u of type '%.4s' is missing mandatory pixi property",
++                              item->id,
++                              (const char *)item->type);
+         return AVIF_RESULT_BMFF_PARSE_FAILED;
+     }
+ 
+diff --git a/tests/docker/build.sh b/tests/docker/build.sh
+index 442640a..8f2e91e 100644
+--- a/tests/docker/build.sh
++++ b/tests/docker/build.sh
+@@ -62,7 +62,7 @@ ninja install
+ 
+ # rav1e
+ cd
+-git clone -b 0.4 --depth 1 https://github.com/xiph/rav1e.git
++git clone -b 0.5 --depth 1 https://github.com/xiph/rav1e.git
+ cd rav1e
+ cargo cinstall --prefix=/usr --release
+ 

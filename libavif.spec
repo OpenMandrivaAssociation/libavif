@@ -15,6 +15,7 @@ Source0:    https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-
 # Fix compilation with new Clang 13.0.0 and new Glib2.0/
 # Patch still awaiting for merge!
 Patch0:     https://patch-diff.githubusercontent.com/raw/AOMediaCodec/libavif/pull/783.patch
+Patch1:	    update-libs.patch
  
 BuildRequires:  cmake
 BuildRequires:  nasm
@@ -25,6 +26,7 @@ BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(rav1e)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libyuv)
+
  
 %description
 This library aims to be a friendly, portable C implementation of the AV1 Image
