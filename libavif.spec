@@ -1,4 +1,4 @@
-%define major 13
+%define major 14
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
