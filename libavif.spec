@@ -71,7 +71,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %cmake  -DAVIF_CODEC_AOM=1 \
         -DAVIF_CODEC_DAV1D=1 \
         -DAVIF_CODEC_RAV1E=1 \
-        -DAVIF_CODEC_SVT=1
+        -DAVIF_CODEC_SVT=1 \
         -DAVIF_BUILD_APPS=1 \
         -DAVIF_BUILD_GDK_PIXBUF=1
 %make_build
