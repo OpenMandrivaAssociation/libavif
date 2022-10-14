@@ -1,10 +1,10 @@
-%define major 14
+%define major 15
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
 
 Name:       libavif
-Version:    0.10.1
+Version:    0.11.0
 Release:    1
 Summary:    Library for encoding and decoding .avif files
  
@@ -96,3 +96,4 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
  
 %files -n avif-pixbuf-loader
 %{_libdir}/gdk-pixbuf-2.0/*/loaders/libpixbufloader-avif.so
+%{_datadir}/thumbnailers/avif.thumbnailer
