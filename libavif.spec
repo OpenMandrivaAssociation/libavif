@@ -1,4 +1,4 @@
-%define major 15
+%define major 16
 
 %define libname		%mklibname avif %{major}
 %define develname	%mklibname avif -d
@@ -11,6 +11,9 @@ Summary:    Library for encoding and decoding .avif files
 License:    BSD
 URL:        https://github.com/AOMediaCodec/libavif
 Source0:    https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-%{version}.tar.gz
+
+# Upstream, fixing build with pixbuf enabled
+Patch0:     https://github.com/AOMediaCodec/libavif/commit/26224fe476ec660e44c816ca5b95d6ed08d1ad06.patch
  
 BuildRequires:  cmake
 BuildRequires:  nasm
@@ -73,7 +76,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
         -DAVIF_CODEC_RAV1E=1 \
         -DAVIF_CODEC_SVT=1 \
         -DAVIF_BUILD_APPS=1 \
-        -DAVIF_BUILD_GDK_PIXBUF=0
+        -DAVIF_BUILD_GDK_PIXBUF=1
 %make_build
 
 %install
