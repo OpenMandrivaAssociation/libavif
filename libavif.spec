@@ -5,8 +5,8 @@
 %define develname	%mklibname avif -d
 
 Name:       libavif
-Version:    1.0.1
-Release:    2
+Version:    1.0.2
+Release:    1
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
