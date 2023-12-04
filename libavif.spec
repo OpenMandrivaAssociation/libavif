@@ -1,12 +1,13 @@
 %define major 16
 
+%define veryoldlibname	%mklibname avif 15
 %define oldlibname	%mklibname avif %{major}
 %define libname		%mklibname avif
 %define develname	%mklibname avif -d
 
 Name:       libavif
 Version:    1.0.2
-Release:    1
+Release:    2
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
@@ -36,6 +37,7 @@ https://aomediacodec.github.io/av1-avif/
 Summary:        Libavif is shared library from libavif
 Group:          System/Libraries
 %rename %{oldlibname}
+Obsoletes:	%{veryoldlibname} < %{EVRD}
 
 %description -n %{libname}
 Libavif is shared library from libavif
