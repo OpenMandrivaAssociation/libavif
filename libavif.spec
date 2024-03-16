@@ -7,7 +7,7 @@
 
 Name:       libavif
 Version:    1.0.4
-Release:    3
+Release:    4
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
