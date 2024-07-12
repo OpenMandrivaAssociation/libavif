@@ -7,7 +7,7 @@
 
 Name:       libavif
 Version:    1.1.0
-Release:    1
+Release:    2
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
@@ -45,6 +45,7 @@ Libavif is shared library from libavif
 %package devel
 Summary:        Development files for libavif
 Requires:       %{libname} = %{version}
+Requires:	pkgconfig(libyuv)
  
 %description devel
 This package holds the development files for libavif.
