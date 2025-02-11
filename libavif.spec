@@ -7,7 +7,7 @@
 
 Name:       libavif
 Version:    1.1.1
-Release:    1
+Release:    2
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
@@ -23,7 +23,7 @@ BuildRequires:  pkgconfig(libpng)
 BuildRequires:  pkgconfig(rav1e)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libyuv)
-BuildRequires:  pkgconfig(SvtAv1Dec)
+BuildRequires:  pkgconfig(libsharpyuv)
 BuildRequires:  pkgconfig(SvtAv1Enc)
 
  
@@ -42,12 +42,16 @@ Obsoletes:	%{veryoldlibname} < %{EVRD}
 %description -n %{libname}
 Libavif is shared library from libavif
  
-%package devel
+%package -n %{develname}
 Summary:        Development files for libavif
 Requires:       %{libname} = %{version}
 Requires:	pkgconfig(libyuv)
+# Renamed 2025/02/11 before 6.0
+%if "%{develname}" != "%{name}-devel"
+%rename %{name}-devel
+%endif
  
-%description devel
+%description -n %{develname}
 This package holds the development files for libavif.
  
 %package tools
@@ -73,22 +77,27 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %autosetup -p1
  
 %build
-%cmake  -DAVIF_CODEC_AOM=1 \
-        -DAVIF_CODEC_DAV1D=1 \
-        -DAVIF_CODEC_RAV1E=1 \
-        -DAVIF_CODEC_SVT=1 \
-        -DAVIF_BUILD_APPS=1 \
-        -DAVIF_BUILD_GDK_PIXBUF=1
-%make_build
+%cmake  -DAVIF_CODEC_AOM=SYSTEM \
+        -DAVIF_CODEC_DAV1D=SYSTEM \
+        -DAVIF_CODEC_RAV1E=SYSTEM \
+        -DAVIF_CODEC_SVT=SYSTEM \
+	-DAVIF_JPEG=SYSTEM \
+	-DAVIF_LIBSHARPYUV=SYSTEM \
+	-DAVIF_LIBYUV=SYSTEM \
+	-DAVIF_ZLIBPNG=SYSTEM \
+        -DAVIF_BUILD_APPS=ON \
+        -DAVIF_BUILD_GDK_PIXBUF=ON \
+	-G Ninja
+%ninja_build
 
 %install
-%make_install -C build
+%ninja_install -C build
 
 
 %files -n %{libname}
 %{_libdir}/libavif.so.%{major}*
 
-%files devel
+%files -n %{develname}
 %{_libdir}/libavif.so
 %{_includedir}/avif/
 %{_libdir}/cmake/libavif/
