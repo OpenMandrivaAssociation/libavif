@@ -25,6 +25,7 @@ BuildRequires:  pkgconfig(rav1e)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libyuv)
 BuildRequires:  pkgconfig(libsharpyuv)
+BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(SvtAv1Enc)
 
  
