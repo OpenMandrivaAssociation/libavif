@@ -108,7 +108,7 @@ Avif-pixbuf-loader contains a plugin to load AVIF images in GTK+ applications.
 %doc CHANGELOG.md README.md
 %{_bindir}/avifdec
 %{_bindir}/avifenc
-%{_bindir}/avifgainmaputil
+#{_bindir}/avifgainmaputil
  
 %files -n avif-pixbuf-loader
 %{_libdir}/gdk-pixbuf-2.0/*/loaders/libpixbufloader-avif.so
