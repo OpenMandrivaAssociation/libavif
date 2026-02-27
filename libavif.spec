@@ -16,6 +16,7 @@ Source0:    https://github.com/AOMediaCodec/libavif/archive/v%{version}/%{name}-
 Patch0:		libavif-no-avifgainmaputil.patch
  
 BuildRequires:  cmake
+BuildRequires:	ninja
 BuildRequires:  nasm
 BuildRequires:  pkgconfig(aom)
 BuildRequires:  pkgconfig(dav1d)
