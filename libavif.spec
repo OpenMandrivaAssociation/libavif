@@ -7,7 +7,7 @@
 
 Name:       libavif
 Version:    1.3.0
-Release:    1
+Release:    2
 Summary:    Library for encoding and decoding .avif files
  
 License:    BSD
@@ -29,6 +29,11 @@ BuildRequires:  pkgconfig(libsharpyuv)
 BuildRequires:	pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(SvtAv1Enc)
 
+%patchlist
+# Fix SVT-AV1 4.0 interop
+https://github.com/AOMediaCodec/libavif/commit/3c3140af5515e9ad78dfaf4e8d230c07591a53ff.patch
+# Fix SVT-AV1 4.0 interop, part 2
+https://github.com/AOMediaCodec/libavif/commit/540c4907eb30e38d61889fa69ce1549b6d9197b2.patch
  
 %description
 This library aims to be a friendly, portable C implementation of the AV1 Image
