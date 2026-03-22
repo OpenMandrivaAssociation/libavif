@@ -6,7 +6,7 @@
 %define develname	%mklibname avif -d
 
 Name:       libavif
-Version:    1.4.0
+Version:    1.4.1
 Release:    1
 Summary:    Library for encoding and decoding .avif files
  
@@ -26,7 +26,7 @@ BuildRequires:  pkgconfig(rav1e)
 BuildRequires:  pkgconfig(zlib)
 BuildRequires:  pkgconfig(libyuv)
 BuildRequires:  pkgconfig(libsharpyuv)
-BuildRequires:	pkgconfig(libxml-2.0)
+BuildRequires:	pkgconfig(libxml-2.0) >= 2.15.2
 BuildRequires:  pkgconfig(SvtAv1Enc)
 
 %patchlist
